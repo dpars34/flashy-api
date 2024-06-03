@@ -18,16 +18,26 @@ class DeckFactory extends Factory
      */
     public function definition(): array
     {
+        $userIds = User::pluck('id')->toArray();
+
+        if (empty($userIds)) {
+            throw new \Exception('No existing users found to create decks.');
+        }
+
+        $creatorUserId = $this->faker->randomElement($userIds);
+
         $options = ['history', 'math', 'science', 'language'];
-        
+        $likedUsers = $this->faker->randomElements($userIds, rand(1, 5));
+
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->text(20),
             'categories' => json_encode([$this->faker->randomElement($options)]),
             'left_option' => "false",
             'right_option' => "true",
-            'creator_user_id' => User::inRandomOrder()->first()->id
-            // count will be set when cards are created
+            'creator_user_id' => $creatorUserId,
+            'count' => 0,
+            'liked_users' => json_encode($likedUsers),
         ];
     }
 }
