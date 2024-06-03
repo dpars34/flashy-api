@@ -3,10 +3,11 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\User;
-use Illuminate\Database\Seeder;
-use App\Models\Deck;
 use App\Models\Card;
+use App\Models\Deck;
+use App\Models\User;
+use App\Models\Highscore;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,5 +24,7 @@ class DatabaseSeeder extends Seeder
         
             $deck->update(['count' => $deck->cards()->count()]);
         });
+
+        Highscore::factory(20)->create();
     }
 }
