@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Card;
 use App\Models\Deck;
+use App\Models\Like;
 use App\Models\User;
 use App\Models\Highscore;
 use Illuminate\Database\Seeder;
@@ -26,5 +27,6 @@ class DatabaseSeeder extends Seeder
         });
 
         Highscore::factory(20)->create();
+        Like::factory(20)->create();
     }
 }
