@@ -22,4 +22,9 @@ class Deck extends Model
     {
         return $this->hasMany(Card::class);
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_user_id');
+    }
 }
