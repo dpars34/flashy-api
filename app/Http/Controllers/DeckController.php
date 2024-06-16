@@ -12,21 +12,13 @@ class DeckController extends Controller
         
         $decks = Deck::with('creator')->get();
 
-        foreach ($decks as $deck) {
-            $deck->creator_user_name = $deck->creator->name;
-        }
-
         return response()->json($decks);
     }
 
     public function show($id) {
 
-        $deck = Deck::findOrFail($id);
+        $deck = Deck::with(['cards', 'creator', 'highscores.user'])->findOrFail($id);
 
-        $cards = $deck->cards;
-
-        $deck->cards = $cards;
-
-        return response()->json(['deck' => $deck]);
+        return response()->json($deck);
     }
 }

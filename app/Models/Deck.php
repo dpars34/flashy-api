@@ -27,4 +27,9 @@ class Deck extends Model
     {
         return $this->belongsTo(User::class, 'creator_user_id');
     }
+
+    public function highscores() 
+    {
+        return $this->hasMany(Highscore::class)->orderBy('time')->limit(3);
+    }
 }
