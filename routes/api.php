@@ -24,6 +24,10 @@ Route::get('/decks/{id}', [DeckController::class, 'show']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+// REGISTER
+Route::post('/register-confirmation', [AuthController::class, 'registerConfirmation']);
+Route::post('/register', [AuthController::class, 'register']);
+
 // PROTECTED ROUTES
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
