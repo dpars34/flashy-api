@@ -30,8 +30,12 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // PROTECTED ROUTES
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/user', [AuthController::class, 'details']);
+    Route::post('/user-edit-confirmation', [AuthController::class, 'editConfirmation']);
+    Route::post('/user-edit', [AuthController::class, 'edit']);
 
+    Route::post('/validate-password', [AuthController::class, 'validateOldPassword']);
+    Route::post('/update-password', [AuthController::class, 'changePassword']);
+    Route::post('/check-password', [AuthController::class, 'checkPassword']);
+    Route::post('/delete-account', [AuthController::class, 'deleteAccount']);
 });

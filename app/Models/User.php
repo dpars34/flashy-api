@@ -46,4 +46,28 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+      // Define the relationship to Deck
+      public function decks()
+      {
+          return $this->hasMany(Deck::class, 'creator_user_id');
+      }
+  
+      // Define the relationship to Highscore
+      public function highscores()
+      {
+          return $this->hasMany(Highscore::class);
+      }
+  
+      // Define the relationship to Like
+      public function likes()
+      {
+          return $this->hasMany(Like::class);
+      }
+  
+      // Define the relationship to Card through Decks
+      public function cards()
+      {
+          return $this->hasManyThrough(Card::class, Deck::class, 'creator_user_id', 'deck_id', 'id', 'id');
+      }
 }
