@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('left_option')->nullable();
             $table->string('right_option')->nullable();
             $table->integer('count')->nullable();
-            $table->json('liked_users')->nullable();
         });
     }
 

@@ -119,7 +119,7 @@ class AuthController extends Controller
     
         $user = $request->user();
     
-        if ($request->has('updateImage') && $request->updateImage) {
+        if ($request->has('updateImage') && $request->updateImage == 'true') {
             if ($request->file('profile_image') != null) {
                 // Upload profile image to Firebase Storage
                 $profileImageURL = $this->firebaseStorageService->uploadProfileImage($request->file('profile_image'), $user->username);

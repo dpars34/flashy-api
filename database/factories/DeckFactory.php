@@ -37,7 +37,6 @@ class DeckFactory extends Factory
             'right_option' => "true",
             'creator_user_id' => $creatorUserId,
             'count' => 0,
-            'liked_users' => json_encode($likedUsers),
         ];
     }
 }

@@ -38,4 +38,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/update-password', [AuthController::class, 'changePassword']);
     Route::post('/check-password', [AuthController::class, 'checkPassword']);
     Route::post('/delete-account', [AuthController::class, 'deleteAccount']);
+
+    Route::post('/submit-deck', [DeckController::class, 'store']);
 });

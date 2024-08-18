@@ -32,4 +32,14 @@ class Deck extends Model
     {
         return $this->hasMany(Highscore::class)->orderBy('time')->limit(3);
     }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class, 'deck_id');
+    }
+
+    public function likedUsers()
+    {
+        return $this->belongsToMany(User::class, 'likes', 'deck_id', 'user_id');
+    }
 }
