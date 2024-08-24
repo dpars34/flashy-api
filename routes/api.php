@@ -40,4 +40,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/delete-account', [AuthController::class, 'deleteAccount']);
 
     Route::post('/submit-deck', [DeckController::class, 'store']);
+
+    Route::post('/like-deck/{deckId}', [DeckController::class, 'like']);
+    Route::delete('/like-deck/{deckId}', [DeckController::class, 'unlike']);
 });

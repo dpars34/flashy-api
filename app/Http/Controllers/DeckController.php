@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Deck;
-use App\Models\User;
 use App\Models\Card;
+use App\Models\Deck;
+use App\Models\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DeckController extends Controller
 {
@@ -104,5 +105,49 @@ class DeckController extends Controller
             DB::rollBack();
             return response()->json(['error' => $e], 500);
         }
+    }
+
+    public function like($deckId) {
+
+        $user = Auth::user();
+
+        if ($user) {
+            $like = Like::where('deck_id', $deckId)->where('user_id', $user->id)->first();
+
+            if ($like) {
+                $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
+                return response()->json(['message', 'Deck already liked', 'liked_users' => $likedUsers], 200);
+            } 
+    
+            Like::create([
+                'deck_id' => $deckId,
+                'user_id' => $user->id,
+            ]);
+
+            $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
+            return response()->json(['message' => 'Deck liked', 'liked_users' => $likedUsers], 201);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    public function unlike($deckId) {
+
+        $user = Auth::user();
+
+        if ($user) {
+            $like = Like::where('deck_id', $deckId)->where('user_id', $user->id)->first();
+    
+            if ($like) {
+                $like->delete();
+                $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
+                return response()->json(['message' => 'Deck unliked', 'liked_users' => $likedUsers], 200);
+            } else {
+                $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
+                return response()->json(['message' => 'Deck has not been liked', 'liked_users' => $likedUsers], 200);
+            }
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 }
