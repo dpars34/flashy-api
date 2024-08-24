@@ -7,6 +7,7 @@ use App\Models\Card;
 use App\Models\Deck;
 use App\Models\Like;
 use App\Models\User;
+use App\Models\Category;
 use App\Models\Highscore;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory(10)->create();
+        Category::factory(10)->create();
 
         Deck::factory()->count(5)->create()->each(function ($deck) {
             $cards = Card::factory()->count(10)->make();

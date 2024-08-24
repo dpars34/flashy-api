@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('creator_user_id')->constrained('users')->onDelete('cascade');
             $table->string('name');
             $table->string('description')->nullable();
-            $table->json('categories')->nullable();
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->string('left_option')->nullable();
             $table->string('right_option')->nullable();
             $table->integer('count')->nullable();

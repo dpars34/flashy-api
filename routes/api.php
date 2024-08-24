@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -27,6 +28,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 // REGISTER
 Route::post('/register-confirmation', [AuthController::class, 'registerConfirmation']);
 Route::post('/register', [AuthController::class, 'register']);
+
+// CATEGORIES
+Route::get('/categories', [CategoryController::class, 'index']);
 
 // PROTECTED ROUTES
 Route::middleware(['auth:sanctum'])->group(function () {

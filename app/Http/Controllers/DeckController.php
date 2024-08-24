@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class DeckController extends Controller
 {
     public function index() {
-        $decks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])->get();
+        $decks = Deck::with(['cards', 'creator', 'highscores.user',])->get();
     
         $decks = $decks->map(function($deck) {
             return [
@@ -22,7 +22,6 @@ class DeckController extends Controller
                 'creator_user_id' => $deck->creator_user_id,
                 'name' => $deck->name,
                 'description' => $deck->description,
-                'categories' => json_decode($deck->categories) ?: [],  // Ensure categories is an array
                 'left_option' => $deck->left_option,
                 'right_option' => $deck->right_option,
                 'count' => $deck->count,
@@ -30,6 +29,7 @@ class DeckController extends Controller
                 'creator' => $deck->creator,
                 'cards' => $deck->cards,
                 'highscores' => $deck->highscores,
+                'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name] : null,
             ];
         });
     
@@ -39,13 +39,12 @@ class DeckController extends Controller
 
     public function show($id) {
 
-        $deck = Deck::with(['cards', 'creator', 'highscores.user'])->findOrFail($id);
+        $deck = Deck::with(['cards', 'creator', 'highscores.user',])->findOrFail($id);
 
         return response()->json([
             'id' => $deck->id,
             'name' => $deck->name,
             'description' => $deck->description,
-            'categories' => $deck->categories,
             'left_option' => $deck->left_option,
             'right_option' => $deck->right_option,
             'count' => $deck->count,
@@ -53,6 +52,7 @@ class DeckController extends Controller
             'creator' => $deck->creator,
             'highscores' => $deck->highscores,
             'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return user IDs as an array
+            'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name] : null,
         ]);
     }
 
@@ -61,7 +61,7 @@ class DeckController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'categories' => 'nullable|array',
+            'category_id' => 'required|exists:categories,id',
             'left_option' => 'required|string|max:15',
             'right_option' => 'required|string|max:15',
             'count' => 'required|integer',
@@ -79,7 +79,7 @@ class DeckController extends Controller
             $deck = Deck::create([
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? '',
-                'categories' => json_encode($validated['categories']),
+                'category_id' => $validated['category_id'],
                 'left_option' => $validated['left_option'],
                 'right_option' => $validated['right_option'],
                 'count' => $validated['count'],
@@ -103,7 +103,7 @@ class DeckController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => $e], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

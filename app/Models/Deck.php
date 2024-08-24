@@ -12,7 +12,7 @@ class Deck extends Model
         'creator_user_id',
         'name',
         'description',
-        'categories',
+        'category_id',
         'left_option',
         'right_option',
         'count',
@@ -41,5 +41,10 @@ class Deck extends Model
     public function likedUsers()
     {
         return $this->belongsToMany(User::class, 'likes', 'deck_id', 'user_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 }
