@@ -22,7 +22,7 @@ class HighscoreFactory extends Factory
         return [
             'deck_id' => Deck::inRandomOrder()->first()->id,
             'user_id' => User::inRandomOrder()->first()->id,
-            'time' => $this->faker->randomFloat(2, 1, 100),
+            'time' => $this->faker->randomFloat(2, 1, 10000),
         ];
     }
 }

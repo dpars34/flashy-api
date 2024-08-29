@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class DeckController extends Controller
 {
     public function index() {
-        $decks = Deck::with(['cards', 'creator', 'highscores.user',])->get();
+        $decks = Deck::with(['cards', 'creator', 'highscores.user'])->get();
     
         $decks = $decks->map(function($deck) {
             return [
@@ -28,7 +28,7 @@ class DeckController extends Controller
                 'liked_users' => $deck->likedUsers->pluck('id')->toArray(),  // Return liked_users as an array
                 'creator' => $deck->creator,
                 'cards' => $deck->cards,
-                'highscores' => $deck->highscores,
+                'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
                 'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name] : null,
             ];
         });

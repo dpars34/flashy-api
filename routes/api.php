@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DeckController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HighscoreController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -47,4 +48,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('/like-deck/{deckId}', [DeckController::class, 'like']);
     Route::delete('/like-deck/{deckId}', [DeckController::class, 'unlike']);
+
+    Route::post('/update-highscore',[HighscoreController::class, 'store']);
 });
