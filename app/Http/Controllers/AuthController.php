@@ -51,7 +51,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
             'name' => 'required|unique:users',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
             'bio' => 'nullable|string'
         ]);
 
@@ -68,7 +68,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
             'name' => 'required|unique:users',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
             'bio' => 'nullable|string'
         ]);
 
@@ -99,7 +99,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users,email,' . $request->user()->id, // Ignore the current user's email
             'name' => 'required|unique:users,name,' . $request->user()->id, // Ignore the current user's name
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
             'bio' => 'nullable|string'
         ]);
 
@@ -114,7 +114,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users,email,' . $request->user()->id, // Ignore the current user's email
             'name' => 'required|unique:users,name,' . $request->user()->id, // Ignore the current user's name
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096',
             'bio' => 'nullable|string'
         ]);
     
@@ -126,10 +126,18 @@ class AuthController extends Controller
     
         if ($request->has('updateImage') && $request->updateImage == 'true') {
             if ($request->file('profile_image') != null) {
+                // If there's an existing image, delete it
+                if ($user->profile_image) {
+                    $this->firebaseStorageService->deleteProfileImage($user->profile_image);
+                }
                 // Upload profile image to Firebase Storage
-                $profileImageURL = $this->firebaseStorageService->uploadProfileImage($request->file('profile_image'), $user->username);
+                $profileImageURL = $this->firebaseStorageService->uploadProfileImage($request->file('profile_image'), $user->id);
                 $user->profile_image = $profileImageURL;
             } else {
+                // If no image is uploaded, remove the current image
+                if ($user->profile_image) {
+                    $this->firebaseStorageService->deleteProfileImage($user->profile_image);
+                }
                 $user->profile_image = null;
             }
         }

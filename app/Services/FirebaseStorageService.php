@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use Illuminate\Http\File;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Storage;
-use Illuminate\Http\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage as LocalStorage;
 
 class FirebaseStorageService
@@ -38,5 +39,33 @@ class FirebaseStorageService
         LocalStorage::delete($filePath);
 
         return $profileImageURL;
+    }
+
+    public function deleteProfileImage($filePath)
+    {
+        function getStoragePathFromURL($url) {
+            // Parse the URL to get the path component
+            $parsedUrl = parse_url($url, PHP_URL_PATH);
+            
+            // Find the position of '/profile_images' in the path
+            $position = strpos($parsedUrl, '/profile_images');
+        
+            // Extract the internal storage path starting from '/profile_images'
+            $storagePath = substr($parsedUrl, $position + 1);
+        
+            return $storagePath;
+        }
+
+        $bucket = $this->firebaseStorage->getBucket();
+        $storagePath = getStoragePathFromURL($filePath);
+        Log::info('Attempting to delete file: ' . $storagePath);
+        $object = $bucket->object($storagePath );
+    
+        if ($object->exists()) {
+            $object->delete();
+            Log::info('File deleted successfully: ' . $storagePath);
+        } else {
+            Log::warning('File does not exist: ' . $storagePath);
+        }
     }
 }
