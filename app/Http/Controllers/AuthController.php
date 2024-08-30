@@ -52,6 +52,7 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed',
             'name' => 'required|unique:users',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bio' => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
@@ -68,6 +69,7 @@ class AuthController extends Controller
             'password' => 'required|min:6|confirmed',
             'name' => 'required|unique:users',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bio' => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
@@ -87,6 +89,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'name' => $request->name,
             'profile_image' => $profileImageURL,
+            'bio' => $request->bio
         ]);
 
         return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
@@ -97,6 +100,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email,' . $request->user()->id, // Ignore the current user's email
             'name' => 'required|unique:users,name,' . $request->user()->id, // Ignore the current user's name
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bio' => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
@@ -111,6 +115,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email,' . $request->user()->id, // Ignore the current user's email
             'name' => 'required|unique:users,name,' . $request->user()->id, // Ignore the current user's name
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bio' => 'nullable|string'
         ]);
     
         if ($validator->fails()) {
@@ -132,6 +137,7 @@ class AuthController extends Controller
         // Update user details
         $user->email = $request->input('email');
         $user->name = $request->input('name');
+        $user->bio = $request->input('bio');
     
         // Save the updated user details
         $user->save();
