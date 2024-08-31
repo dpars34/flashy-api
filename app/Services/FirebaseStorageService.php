@@ -59,7 +59,7 @@ class FirebaseStorageService
         $bucket = $this->firebaseStorage->getBucket();
         $storagePath = getStoragePathFromURL($filePath);
         Log::info('Attempting to delete file: ' . $storagePath);
-        $object = $bucket->object($storagePath );
+        $object = $bucket->object($storagePath);
     
         if ($object->exists()) {
             $object->delete();

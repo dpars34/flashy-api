@@ -18,6 +18,7 @@ class CategoryFactory extends Factory
     {
         return [
             'name' => $this->faker->text(10),
+            'emoji' => '🚀'
         ];
     }
 }

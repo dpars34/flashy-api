@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DeckController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HighscoreController;
 
@@ -32,6 +33,9 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // CATEGORIES
 Route::get('/categories', [CategoryController::class, 'index']);
+
+// PROFILE
+Route::get('/profile/{id}', [UserController::class, 'show']);
 
 // PROTECTED ROUTES
 Route::middleware(['auth:sanctum'])->group(function () {

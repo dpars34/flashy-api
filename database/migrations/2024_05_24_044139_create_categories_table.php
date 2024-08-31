@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('name');
+            $table->string('emoji')->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
         });
     }
 
