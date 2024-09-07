@@ -22,6 +22,7 @@ Route::get('/test', function () {
 // DECKS
 Route::get('/decks', [DeckController::class, 'index']);
 Route::get('/decks/{id}', [DeckController::class, 'show']);
+Route::get('/random-decks', [DeckController::class, 'getRandomDecks']);
 
 // LOGIN
 Route::post('/login', [AuthController::class, 'login']);

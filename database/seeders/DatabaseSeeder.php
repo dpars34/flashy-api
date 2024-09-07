@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         User::factory(10)->create();
         Category::factory(10)->create();
 
-        Deck::factory()->count(5)->create()->each(function ($deck) {
+        Deck::factory()->count(20)->create()->each(function ($deck) {
             $cards = Card::factory()->count(10)->make();
             $deck->cards()->saveMany($cards);
         

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Card;
 use App\Models\Deck;
 use App\Models\Like;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -151,5 +152,46 @@ class DeckController extends Controller
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
+    public function getRandomDecks()
+    {
+        $categories = Category::inRandomOrder()->take(5)->get();
+
+        $result = [];
+
+        foreach ($categories as $category) {
+            $decks = Deck::with(['cards', 'creator', 'highscores.user',])->where('category_id', $category->id)
+                    ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
+                    ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes
+                    ->with('category') // Eager load the category relationship
+                    ->groupBy('decks.id') // Group by deck ID
+                    ->orderBy('likes_count', 'desc') // Order by the count of likes in descending order
+                    ->take(3)
+                    ->get();
+
+            $structuredDecks = $decks->map(function($deck) use ($category) {
+                return [
+                    'id' => $deck->id,
+                    'created_at' => $deck->created_at,
+                    'updated_at' => $deck->updated_at,
+                    'creator_user_id' => $deck->creator_user_id,
+                    'name' => $deck->name,
+                    'description' => $deck->description,
+                    'left_option' => $deck->left_option,
+                    'right_option' => $deck->right_option,
+                    'count' => $deck->count,
+                    'liked_users' => $deck->likedUsers->pluck('id')->toArray(),  // Return liked_users as an array
+                    'creator' => $deck->creator,
+                    'cards' => $deck->cards,
+                    'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                    'category' => ['id' => $category->id, 'name' => $category->name, 'emoji' => $category->emoji],
+                ];
+            });
     
+            $result[] = [
+                'category' => ['id' => $category->id, 'name' => $category->name, 'emoji' => $category->emoji],
+                'decks' => $structuredDecks 
+            ];
+        }
+        return response()->json($result);
+    }
 }

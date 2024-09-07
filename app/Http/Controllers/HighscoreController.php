@@ -52,7 +52,7 @@ class HighscoreController extends Controller
             'creator' => $deck->creator,
             'cards' => $deck->cards,
             'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
-            'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name] : null,
+            'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name, 'emoji' => $deck->category->emoji] : null,
         ], 201);
     }
 }
