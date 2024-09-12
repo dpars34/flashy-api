@@ -194,4 +194,55 @@ class DeckController extends Controller
         }
         return response()->json($result);
     }
+
+    public function getDecksByCategory($id, Request $request)
+    {
+
+        $decks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+        ->where('category_id', $id)
+        ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
+        ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes
+        ->groupBy('decks.id') // Group by deck ID
+        ->orderBy('likes_count', 'desc') // Order by the count of likes in descending order
+        ->paginate($request->input('limit', 10)); // Paginate results with a default limit of 10 per page
+
+
+        $structuredDecks = $decks->map(function($deck) {
+            return [
+                'id' => $deck->id,
+                'created_at' => $deck->created_at,
+                'updated_at' => $deck->updated_at,
+                'creator_user_id' => $deck->creator_user_id,
+                'name' => $deck->name,
+                'description' => $deck->description,
+                'left_option' => $deck->left_option,
+                'right_option' => $deck->right_option,
+                'count' => $deck->count,
+                'liked_users' => $deck->likedUsers->pluck('id')->toArray(),  // Return liked_users as an array
+                'creator' => $deck->creator,
+                'cards' => $deck->cards,
+                'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                'category' => [
+                    'id' => $deck->category->id, 
+                    'name' => $deck->category->name, 
+                    'emoji' => $deck->category->emoji
+                ],
+            ];
+        });
+
+        return response()->json([
+            'category' => [
+                'id' => optional($decks->first()->category)->id, 
+                'name' => optional($decks->first()->category)->name, 
+                'emoji' => optional($decks->first()->category)->emoji,
+            ],
+            'decks' => $structuredDecks,
+            'pagination' => [
+                'current_page' => $decks->currentPage(),
+                'last_page' => $decks->lastPage(),
+                'per_page' => $decks->perPage(),
+                'total' => $decks->total(),
+            ],
+        ]);
+    }
 }
