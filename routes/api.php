@@ -19,6 +19,27 @@ Route::get('/test', function () {
     ];
 });
 
+// PROTECTED ROUTES
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user', [AuthController::class, 'details']);
+    Route::post('/user-edit-confirmation', [AuthController::class, 'editConfirmation']);
+    Route::post('/user-edit', [AuthController::class, 'edit']);
+
+    Route::post('/validate-password', [AuthController::class, 'validateOldPassword']);
+    Route::post('/update-password', [AuthController::class, 'changePassword']);
+    Route::post('/check-password', [AuthController::class, 'checkPassword']);
+    Route::post('/delete-account', [AuthController::class, 'deleteAccount']);
+
+    Route::post('/submit-deck', [DeckController::class, 'store']);
+
+    Route::post('/like-deck/{deckId}', [DeckController::class, 'like']);
+    Route::delete('/like-deck/{deckId}', [DeckController::class, 'unlike']);
+
+    Route::post('/update-highscore',[HighscoreController::class, 'store']);
+
+    Route::get('/decks/liked-decks', [DeckController::class, 'getLikedDecks']);
+});
+
 // DECKS
 Route::get('/decks', [DeckController::class, 'index']);
 Route::get('/decks/{id}', [DeckController::class, 'show']);
@@ -38,22 +59,3 @@ Route::get('/categories', [CategoryController::class, 'index']);
 
 // PROFILE
 Route::get('/profile/{id}', [UserController::class, 'show']);
-
-// PROTECTED ROUTES
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/user', [AuthController::class, 'details']);
-    Route::post('/user-edit-confirmation', [AuthController::class, 'editConfirmation']);
-    Route::post('/user-edit', [AuthController::class, 'edit']);
-
-    Route::post('/validate-password', [AuthController::class, 'validateOldPassword']);
-    Route::post('/update-password', [AuthController::class, 'changePassword']);
-    Route::post('/check-password', [AuthController::class, 'checkPassword']);
-    Route::post('/delete-account', [AuthController::class, 'deleteAccount']);
-
-    Route::post('/submit-deck', [DeckController::class, 'store']);
-
-    Route::post('/like-deck/{deckId}', [DeckController::class, 'like']);
-    Route::delete('/like-deck/{deckId}', [DeckController::class, 'unlike']);
-
-    Route::post('/update-highscore',[HighscoreController::class, 'store']);
-});

@@ -245,4 +245,53 @@ class DeckController extends Controller
             ],
         ]);
     }
+    public function getLikedDecks(Request $request)
+    {
+        // Get the authenticated user
+        $user = $request->user();
+
+        // Fetch the decks liked by the user
+        $likedDecks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->join('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
+            ->where('likes.user_id', $user->id) // Filter for the authenticated user's likes
+            ->select('decks.*', 'likes.created_at as liked_at', DB::raw('COUNT(likes.id) as likes_count')) // Include the liked timestamp
+            ->groupBy('decks.id', 'likes.created_at') // Group by deck ID and liked timestamp
+            ->orderBy('liked_at', 'desc') // Order by the time the deck was liked, descending
+            ->paginate($request->input('limit', 10)); // Paginate results with a default limit of 10 per page
+
+        // Map and structure the data like in your existing method
+        $structuredLikedDecks = $likedDecks->map(function ($deck) {
+            return [
+                'id' => $deck->id,
+                'created_at' => $deck->created_at,
+                'updated_at' => $deck->updated_at,
+                'creator_user_id' => $deck->creator_user_id,
+                'name' => $deck->name,
+                'description' => $deck->description,
+                'left_option' => $deck->left_option,
+                'right_option' => $deck->right_option,
+                'count' => $deck->count,
+                'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return liked_users as an array
+                'creator' => $deck->creator,
+                'cards' => $deck->cards,
+                'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                'category' => [
+                    'id' => optional($deck->category)->id,
+                    'name' => optional($deck->category)->name,
+                    'emoji' => optional($deck->category)->emoji,
+                ],
+            ];
+        });
+
+        // Return the response in a similar structure
+        return response()->json([
+            'decks' => $structuredLikedDecks,
+            'pagination' => [
+                'current_page' => $likedDecks->currentPage(),
+                'last_page' => $likedDecks->lastPage(),
+                'per_page' => $likedDecks->perPage(),
+                'total' => $likedDecks->total(),
+            ],
+        ]);
+    }
 }
