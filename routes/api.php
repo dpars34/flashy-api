@@ -38,6 +38,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/update-highscore',[HighscoreController::class, 'store']);
 
     Route::get('/decks/liked-decks', [DeckController::class, 'getLikedDecks']);
+    Route::get('/decks/created-decks', [DeckController::class, 'getCreatedDecks']);
+    Route::delete('/decks/{id}', [DeckController::class, 'deleteDeck']);
 });
 
 // DECKS

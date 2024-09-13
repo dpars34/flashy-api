@@ -294,4 +294,82 @@ class DeckController extends Controller
             ],
         ]);
     }
+
+    public function getCreatedDecks(Request $request)
+    {
+        // Get the authenticated user
+        $user = $request->user();
+
+        // Fetch the decks created by the user
+        $createdDecks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->where('creator_user_id', $user->id) // Filter decks created by the user
+            ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes for each deck
+            ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table to get like count
+            ->groupBy('decks.id') // Group by deck ID
+            ->orderBy('created_at', 'desc') // Order by deck creation date, descending
+            ->paginate($request->input('limit', 10)); // Paginate results with a default limit of 10 per page
+
+        // Map and structure the data like in your existing method
+        $structuredCreatedDecks = $createdDecks->map(function ($deck) {
+            return [
+                'id' => $deck->id,
+                'created_at' => $deck->created_at,
+                'updated_at' => $deck->updated_at,
+                'creator_user_id' => $deck->creator_user_id,
+                'name' => $deck->name,
+                'description' => $deck->description,
+                'left_option' => $deck->left_option,
+                'right_option' => $deck->right_option,
+                'count' => $deck->count,
+                'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return liked_users as an array
+                'creator' => $deck->creator,
+                'cards' => $deck->cards,
+                'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                'category' => [
+                    'id' => optional($deck->category)->id,
+                    'name' => optional($deck->category)->name,
+                    'emoji' => optional($deck->category)->emoji,
+                ],
+            ];
+        });
+
+        // Return the response in a similar structure
+        return response()->json([
+            'decks' => $structuredCreatedDecks,
+            'pagination' => [
+                'current_page' => $createdDecks->currentPage(),
+                'last_page' => $createdDecks->lastPage(),
+                'per_page' => $createdDecks->perPage(),
+                'total' => $createdDecks->total(),
+            ],
+        ]);
+    }
+    public function deleteDeck($id, Request $request)
+    {
+        // Get the authenticated user
+        $user = $request->user();
+
+        // Find the deck by ID and ensure it belongs to the authenticated user
+        $deck = Deck::where('id', $id)->where('creator_user_id', $user->id)->first();
+
+        // Check if the deck exists and belongs to the user
+        if (!$deck) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Deck not found or you are not authorized to delete this deck.'
+            ], 404);
+        }
+
+        // Delete any relationships (likes, cards, etc.)
+        $deck->cards()->delete();
+        $deck->likedUsers()->detach(); // Detach all likes
+
+        // Finally, delete the deck
+        $deck->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Deck deleted successfully.'
+        ], 200);
+    }
 }
