@@ -372,4 +372,60 @@ class DeckController extends Controller
             'message' => 'Deck deleted successfully.'
         ], 200);
     }
+
+    public function searchDecks(Request $request)
+    {
+        $searchQuery = $request->input('query');
+        $limit = $request->input('limit', 10); // Default limit is 10
+        $page = $request->input('page', 1); // Default to page 1
+
+        // Check if the search query is provided
+        if (!$searchQuery) {
+            return response()->json([
+                'message' => 'Search query is required.',
+            ], 400);
+        }
+
+        // Perform a search on the decks table based on the search query
+        $decks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->where('name', 'LIKE', "%{$searchQuery}%")  // Search by deck name
+            ->orWhere('description', 'LIKE', "%{$searchQuery}%")  // Optionally search by description
+            ->orderBy('created_at', 'desc')
+            ->paginate($limit, ['*'], 'page', $page);  // Paginate the results
+
+        // Structure the decks as per your requirements
+        $structuredDecks = $decks->map(function ($deck) {
+            return [
+                'id' => $deck->id,
+                'created_at' => $deck->created_at,
+                'updated_at' => $deck->updated_at,
+                'creator_user_id' => $deck->creator_user_id,
+                'name' => $deck->name,
+                'description' => $deck->description,
+                'left_option' => $deck->left_option,
+                'right_option' => $deck->right_option,
+                'count' => $deck->count,
+                'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return liked_users as an array
+                'creator' => $deck->creator,
+                'cards' => $deck->cards,
+                'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                'category' => [
+                    'id' => optional($deck->category)->id,
+                    'name' => optional($deck->category)->name,
+                    'emoji' => optional($deck->category)->emoji,
+                ],
+            ];
+        });
+
+        // Return the structured data along with pagination info
+        return response()->json([
+            'decks' => $structuredDecks,
+            'pagination' => [
+                'current_page' => $decks->currentPage(),
+                'last_page' => $decks->lastPage(),
+                'per_page' => $decks->perPage(),
+                'total' => $decks->total(),
+            ],
+        ]);
+    }
 }
