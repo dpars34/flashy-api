@@ -203,7 +203,7 @@ class DeckController extends Controller
         ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
         ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes
         ->groupBy('decks.id') // Group by deck ID
-        ->orderBy('likes_count', 'desc') // Order by the count of likes in descending order
+        ->orderBy('created_at', 'desc') // Order by deck creation date, descending
         ->paginate($request->input('limit', 10)); // Paginate results with a default limit of 10 per page
 
 
