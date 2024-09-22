@@ -89,7 +89,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'name' => $request->name,
             'profile_image' => $profileImageURL,
-            'bio' => $request->bio
+            'bio' => $request->bio ?? ''
         ]);
 
         return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
