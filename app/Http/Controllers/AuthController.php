@@ -51,7 +51,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
             'name' => 'required|unique:users',
-            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic|max:4096',
+            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic,image/webp|max:10240',
             'bio' => 'nullable|string'
         ]);
 
@@ -68,7 +68,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
             'name' => 'required|unique:users',
-            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic|max:4096',
+            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic,image/webp|max:10240',
             'bio' => 'nullable|string'
         ]);
 
@@ -99,7 +99,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users,email,' . $request->user()->id, // Ignore the current user's email
             'name' => 'required|unique:users,name,' . $request->user()->id, // Ignore the current user's name
-            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic|max:4096',
+            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic,image/webp|max:10240',
             'bio' => 'nullable|string'
         ]);
 
@@ -114,7 +114,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users,email,' . $request->user()->id, // Ignore the current user's email
             'name' => 'required|unique:users,name,' . $request->user()->id, // Ignore the current user's name
-            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic|max:4096',
+            'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic,image/webp|max:10240',
             'bio' => 'nullable|string'
         ]);
     
