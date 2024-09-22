@@ -44,16 +44,23 @@ class DeckController extends Controller
 
         return response()->json([
             'id' => $deck->id,
+            'created_at' => $deck->created_at,
+            'updated_at' => $deck->updated_at,
+            'creator_user_id' => $deck->creator_user_id,
             'name' => $deck->name,
             'description' => $deck->description,
             'left_option' => $deck->left_option,
             'right_option' => $deck->right_option,
             'count' => $deck->count,
-            'cards' => $deck->cards,
+            'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return liked_users as an array
             'creator' => $deck->creator,
-            'highscores' => $deck->highscores,
-            'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return user IDs as an array
-            'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name] : null,
+            'cards' => $deck->cards,
+            'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+            'category' => [
+                'id' => optional($deck->category)->id,
+                'name' => optional($deck->category)->name,
+                'emoji' => optional($deck->category)->emoji,
+            ],
         ]);
     }
 
