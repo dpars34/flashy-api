@@ -282,19 +282,18 @@ class DeckController extends Controller
 
     public function getDecksByCategory($id, Request $request)
     {
-
         $decks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
-        ->where('category_id', $id)
-        ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
-        ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes
-        ->groupBy('decks.id') // Group by deck ID
-        ->orderBy('created_at', 'desc') // Order by deck creation date, descending
-        ->paginate($request->input('limit', 10)); // Paginate results with a default limit of 10 per page
+            ->where('category_id', $id)
+            ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id')
+            ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count'))
+            ->groupBy('decks.id')
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->input('limit', 10));
 
         if ($decks->isEmpty()) {
             return response()->json([
                 'category' => [
-                    'id' => $id,
+                    'id' => (int) $id,
                     'name' => 'Unknown Category',
                     'emoji' => '',
                 ],
@@ -302,11 +301,23 @@ class DeckController extends Controller
                 'pagination' => [
                     'current_page' => 1,
                     'last_page' => 1,
-                    'per_page' => $request->input('limit', 10),
+                    'per_page' => (int) $request->input('limit', 10),
                     'total' => 0,
                 ],
             ]);
         }
+
+        // Check if the first deck has a category, and avoid the error if not
+        $firstDeck = $decks->first();
+        $category = $firstDeck && $firstDeck->category ? [
+            'id' => $firstDeck->category->id,
+            'name' => $firstDeck->category->name,
+            'emoji' => $firstDeck->category->emoji
+        ] : [
+            'id' => $id,
+            'name' => 'Unknown Category',
+            'emoji' => '',
+        ];
 
         $structuredDecks = $decks->map(function($deck) {
             return [
@@ -319,24 +330,20 @@ class DeckController extends Controller
                 'left_option' => $deck->left_option,
                 'right_option' => $deck->right_option,
                 'count' => $deck->count,
-                'liked_users' => $deck->likedUsers->pluck('id')->toArray(),  // Return liked_users as an array
+                'liked_users' => $deck->likedUsers->pluck('id')->toArray(),
                 'creator' => $deck->creator,
                 'cards' => $deck->cards,
                 'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
                 'category' => [
-                    'id' => $deck->category->id, 
-                    'name' => $deck->category->name, 
+                    'id' => $deck->category->id,
+                    'name' => $deck->category->name,
                     'emoji' => $deck->category->emoji
                 ],
             ];
         });
 
         return response()->json([
-            'category' => [
-                'id' => optional($decks->first()->category)->id, 
-                'name' => optional($decks->first()->category)->name, 
-                'emoji' => optional($decks->first()->category)->emoji,
-            ],
+            'category' => $category,
             'decks' => $structuredDecks,
             'pagination' => [
                 'current_page' => $decks->currentPage(),
