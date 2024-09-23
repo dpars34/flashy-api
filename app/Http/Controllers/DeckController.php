@@ -115,6 +115,84 @@ class DeckController extends Controller
         }
     }
 
+    public function update(Request $request, $deckId) {
+        // Validate the request data
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:categories,id',
+            'left_option' => 'required|string|max:15',
+            'right_option' => 'required|string|max:15',
+            'count' => 'required|integer',
+            'creator_user_id' => 'required|exists:users,id',
+            'cards' => 'required|array',
+            'cards.*.id' => 'required|exists:cards,id',  // Ensure only existing cards are updated
+            'cards.*.text' => 'required|string|max:255',
+            'cards.*.note' => 'nullable|string',
+            'cards.*.answer' => 'required|string|max:255',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            // Find the deck to update
+            $deck = Deck::findOrFail($deckId);
+    
+            // Ensure that only the creator can update the deck
+            if ($deck->creator_user_id != auth()->id()) {
+                return response()->json(['error' => 'You are not authorized to update this deck'], 403);
+            }
+    
+            // Update the deck details
+            $deck->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? '',
+                'category_id' => $validated['category_id'],
+                'left_option' => $validated['left_option'],
+                'right_option' => $validated['right_option'],
+                'count' => $validated['count'],
+            ]);
+    
+            // Update only the existing cards' content (no adding or removing)
+            foreach ($validated['cards'] as $cardData) {
+                $card = Card::where('id', $cardData['id'])->where('deck_id', $deckId)->firstOrFail();
+                $card->update([
+                    'text' => $cardData['text'],
+                    'note' => $cardData['note'] ?? '',
+                    'answer' => $cardData['answer'],
+                ]);
+            }
+    
+            DB::commit();
+    
+            // Return the updated deck in the same format as the show method
+            return response()->json([
+                'id' => $deck->id,
+                'created_at' => $deck->created_at,
+                'updated_at' => $deck->updated_at,
+                'creator_user_id' => $deck->creator_user_id,
+                'name' => $deck->name,
+                'description' => $deck->description,
+                'left_option' => $deck->left_option,
+                'right_option' => $deck->right_option,
+                'count' => $deck->count,
+                'liked_users' => $deck->likedUsers->pluck('id')->toArray(), // Return liked_users as an array
+                'creator' => $deck->creator,
+                'cards' => $deck->cards,
+                'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                'category' => [
+                    'id' => optional($deck->category)->id,
+                    'name' => optional($deck->category)->name,
+                    'emoji' => optional($deck->category)->emoji,
+                ],
+            ], 200);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function like($deckId) {
 
         $user = Auth::user();
