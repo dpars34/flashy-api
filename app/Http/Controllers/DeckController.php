@@ -291,6 +291,22 @@ class DeckController extends Controller
         ->orderBy('created_at', 'desc') // Order by deck creation date, descending
         ->paginate($request->input('limit', 10)); // Paginate results with a default limit of 10 per page
 
+        if ($decks->isEmpty()) {
+            return response()->json([
+                'category' => [
+                    'id' => $id,
+                    'name' => 'Unknown Category',
+                    'emoji' => '',
+                ],
+                'decks' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => $request->input('limit', 10),
+                    'total' => 0,
+                ],
+            ]);
+        }
 
         $structuredDecks = $decks->map(function($deck) {
             return [

@@ -1,0 +1,1 @@
+rsync -avz --exclude='.env' --exclude='firebase_credentials.json' --exclude='deploy.sh' --exclude='deploy_prd.sh' -e "ssh" /Users/daniel/Documents/Projects/flashy-app/flashy-api flashy-prod:/home/ec2-user/
