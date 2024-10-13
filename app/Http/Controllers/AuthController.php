@@ -71,27 +71,24 @@ class AuthController extends Controller
             'profile_image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml,image/heif,image/heic,image/webp|max:10240',
             'bio' => 'nullable|string'
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        if ($request->file('profile_image') != null) {
-            // Upload profile image to Firebase Storage
-            $profileImageURL = $this->firebaseStorageService->uploadProfileImage($request->file('profile_image'), $request->username);
-        } else {
-            $profileImageURL = null;
-        }
-
-        // Create user
         $user = User::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'name' => $request->name,
-            'profile_image' => $profileImageURL,
             'bio' => $request->bio ?? ''
         ]);
-
+    
+        if ($request->file('profile_image') != null) {
+            $profileImageURL = $this->firebaseStorageService->uploadProfileImage($request->file('profile_image'), $user->id);
+    
+            $user->update(['profile_image' => $profileImageURL]);
+        }
+    
         return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
     }
 
@@ -145,7 +142,7 @@ class AuthController extends Controller
         // Update user details
         $user->email = $request->input('email');
         $user->name = $request->input('name');
-        $user->bio = $request->input('bio');
+        $user->bio = $request->input('bio') ?? '';
     
         // Save the updated user details
         $user->save();
