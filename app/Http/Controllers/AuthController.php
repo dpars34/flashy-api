@@ -253,5 +253,23 @@ class AuthController extends Controller
         return response()->json(['message' => 'Your account and all related data have been deleted successfully'], 200);
     }
 
+    public function updateFcmToken(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+  
+        // Get the authenticated user
+        $user = $request->user();
+  
+        // Update the FCM token for the user
+        $user->fcm_token = $request->fcm_token;
+        $user->save();
+  
+        return response()->json([
+            'message' => 'FCM Token updated successfully!',
+        ], 200);
+    }
 
 }

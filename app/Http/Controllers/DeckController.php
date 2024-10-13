@@ -8,10 +8,18 @@ use App\Models\Like;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
+use App\Services\NotificationService;
 
 class DeckController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     public function index() {
         $decks = Deck::with(['cards', 'creator', 'highscores.user'])->get();
     
@@ -209,6 +217,15 @@ class DeckController extends Controller
                 'deck_id' => $deckId,
                 'user_id' => $user->id,
             ]);
+
+            $deck = Deck::findOrFail($deckId);
+            $deckOwner = User::findOrFail($deck->creator_user_id);
+            $fcmToken = $deckOwner->fcm_token;
+
+            // Send notification to the deck owner using the NotificationService
+            if ($fcmToken) {
+                $this->notificationService->sendLikeNotification($fcmToken, $user->name, $deck->name, $deck->id);
+            }
 
             $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
             return response()->json(['message' => 'Deck liked', 'liked_users' => $likedUsers], 201);

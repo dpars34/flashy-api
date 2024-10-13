@@ -30,6 +30,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/check-password', [AuthController::class, 'checkPassword']);
     Route::post('/delete-account', [AuthController::class, 'deleteAccount']);
 
+    Route::post('/update-fcm-token', [AuthController::class, 'updateFcmToken']);
+
     Route::post('/submit-deck', [DeckController::class, 'store']);
     Route::put('/decks/{deckId}', [DeckController::class, 'update']);
 
