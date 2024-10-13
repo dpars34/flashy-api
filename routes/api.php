@@ -34,6 +34,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('/submit-deck', [DeckController::class, 'store']);
     Route::put('/decks/{deckId}', [DeckController::class, 'update']);
+    Route::post('/decks/{deckId}/complete', [DeckController::class, 'deckComplete']);
 
     Route::post('/like-deck/{deckId}', [DeckController::class, 'like']);
     Route::delete('/like-deck/{deckId}', [DeckController::class, 'unlike']);
@@ -51,6 +52,7 @@ Route::get('/decks/{id}', [DeckController::class, 'show']);
 Route::get('/random-decks', [DeckController::class, 'getRandomDecks']);
 Route::get('/decks/category/{id}', [DeckController::class, 'getDecksByCategory']);
 Route::get('/search-decks', [DeckController::class, 'searchDecks']);
+Route::post('/decks/{deckId}/complete-guest', [DeckController::class, 'deckCompleteGuest']);
 
 // LOGIN
 Route::post('/login', [AuthController::class, 'login']);

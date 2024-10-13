@@ -7,9 +7,11 @@ use App\Models\Deck;
 use App\Models\Like;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Models\DeckCompletion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendLikeNotificationJob;
 use App\Services\NotificationService;
 
 class DeckController extends Controller
@@ -218,17 +220,18 @@ class DeckController extends Controller
                 'user_id' => $user->id,
             ]);
 
+            $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
+            $response = response()->json(['message' => 'Deck liked', 'liked_users' => $likedUsers], 201);
+    
             $deck = Deck::findOrFail($deckId);
             $deckOwner = User::findOrFail($deck->creator_user_id);
             $fcmToken = $deckOwner->fcm_token;
 
-            // Send notification to the deck owner using the NotificationService
             if ($fcmToken) {
-                $this->notificationService->sendLikeNotification($fcmToken, $user->name, $deck->name, $deck->id);
+                SendLikeNotificationJob::dispatch($fcmToken, $user->name, $deck->name, $deck->id);
             }
 
-            $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
-            return response()->json(['message' => 'Deck liked', 'liked_users' => $likedUsers], 201);
+            return $response;
         }
 
         return response()->json(['message' => 'Unauthorized'], 401);
@@ -552,5 +555,38 @@ class DeckController extends Controller
                 'total' => $decks->total(),
             ],
         ]);
+    }
+
+    public function deckComplete($deckId)
+    {
+        $user = Auth::user();
+
+        if ($user) {
+
+            DeckCompletion::create([
+                'user_id' => $user->id,
+                'deck_id' => $deckId,
+                'completed_at' => now(),
+            ]);
+    
+            return response()->json(['message' => 'Deck completed successfully'], 200);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 401);
+        
+    }
+
+    public function deckCompleteGuest($deckId)
+    {
+        $user = Auth::user();
+
+        DeckCompletion::create([
+            'user_id' => null,
+            'deck_id' => $deckId,
+            'completed_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Deck completed successfully'], 200);
+
     }
 }
