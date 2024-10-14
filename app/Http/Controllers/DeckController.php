@@ -225,7 +225,7 @@ class DeckController extends Controller
             $fcmToken = $deckOwner->fcm_token;
 
             // Send notification to the deck owner using the NotificationService
-            if ($fcmToken) {
+            if ($fcmToken && $deck->creator_user_id != $user->id) {
                 $this->notificationService->sendLikeNotification($fcmToken, $user->name, $deck->name, $deck->id);
             }
 
