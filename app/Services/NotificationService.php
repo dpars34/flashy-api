@@ -40,7 +40,7 @@ class NotificationService
             ],
             'data' => [
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'notification_type' => 'deck_like',
+                'notification_type' => 'deck_link',
                 'deck_id' => $deckId,
             ],
         ];
