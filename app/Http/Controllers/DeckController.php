@@ -220,18 +220,17 @@ class DeckController extends Controller
                 'user_id' => $user->id,
             ]);
 
-            $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
-            $response = response()->json(['message' => 'Deck liked', 'liked_users' => $likedUsers], 201);
-    
             $deck = Deck::findOrFail($deckId);
             $deckOwner = User::findOrFail($deck->creator_user_id);
             $fcmToken = $deckOwner->fcm_token;
 
+            // Send notification to the deck owner using the NotificationService
             if ($fcmToken) {
-                SendLikeNotificationJob::dispatch($fcmToken, $user->name, $deck->name, $deck->id);
+                $this->notificationService->sendLikeNotification($fcmToken, $user->name, $deck->name, $deck->id);
             }
 
-            return $response;
+            $likedUsers = Like::where('deck_id', $deckId)->pluck('user_id');
+            return response()->json(['message' => 'Deck liked', 'liked_users' => $likedUsers], 201);
         }
 
         return response()->json(['message' => 'Unauthorized'], 401);

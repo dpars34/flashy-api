@@ -1,5 +1,5 @@
 <?php
 
 return [
-  'credentials' => realpath(base_path(env('FIREBASE_CREDENTIALS'))),
+  'credentials' => realpath('.' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . env('FIREBASE_CREDENTIALS')),
 ];
