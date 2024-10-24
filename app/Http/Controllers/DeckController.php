@@ -258,11 +258,14 @@ class DeckController extends Controller
 
     public function getRandomDecks()
     {
-        $categories = Category::inRandomOrder()->take(5)->get();
+        $categories = Category::inRandomOrder()->get();
 
         $result = [];
 
         foreach ($categories as $category) {
+
+            if (count($result) == 5) break;
+
             $decks = Deck::with(['cards', 'creator', 'highscores.user',])->where('category_id', $category->id)
                     ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
                     ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes
@@ -272,29 +275,31 @@ class DeckController extends Controller
                     ->take(3)
                     ->get();
 
-            $structuredDecks = $decks->map(function($deck) use ($category) {
-                return [
-                    'id' => $deck->id,
-                    'created_at' => $deck->created_at,
-                    'updated_at' => $deck->updated_at,
-                    'creator_user_id' => $deck->creator_user_id,
-                    'name' => $deck->name,
-                    'description' => $deck->description,
-                    'left_option' => $deck->left_option,
-                    'right_option' => $deck->right_option,
-                    'count' => $deck->count,
-                    'liked_users' => $deck->likedUsers->pluck('id')->toArray(),  // Return liked_users as an array
-                    'creator' => $deck->creator,
-                    'cards' => $deck->cards,
-                    'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+            if (count($decks) >= 2) {
+                $structuredDecks = $decks->map(function($deck) use ($category) {
+                    return [
+                        'id' => $deck->id,
+                        'created_at' => $deck->created_at,
+                        'updated_at' => $deck->updated_at,
+                        'creator_user_id' => $deck->creator_user_id,
+                        'name' => $deck->name,
+                        'description' => $deck->description,
+                        'left_option' => $deck->left_option,
+                        'right_option' => $deck->right_option,
+                        'count' => $deck->count,
+                        'liked_users' => $deck->likedUsers->pluck('id')->toArray(),  // Return liked_users as an array
+                        'creator' => $deck->creator,
+                        'cards' => $deck->cards,
+                        'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
+                        'category' => ['id' => $category->id, 'name' => $category->name, 'emoji' => $category->emoji],
+                    ];
+                });
+        
+                $result[] = [
                     'category' => ['id' => $category->id, 'name' => $category->name, 'emoji' => $category->emoji],
+                    'decks' => $structuredDecks 
                 ];
-            });
-    
-            $result[] = [
-                'category' => ['id' => $category->id, 'name' => $category->name, 'emoji' => $category->emoji],
-                'decks' => $structuredDecks 
-            ];
+            }
         }
         return response()->json($result);
     }
