@@ -47,9 +47,4 @@ class Deck extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
-
-    public function completions()
-    {
-        return $this->hasMany(DeckCompletion::class, 'deck_id');
-    }
 }
