@@ -23,7 +23,7 @@ class DeckController extends Controller
         $this->notificationService = $notificationService;
     }
     public function index() {
-        $decks = Deck::with(['cards', 'creator', 'highscores.user'])->get();
+        $decks = Deck::with(['cards', 'creator', 'highscores.user'])->withCount('completions')->get();
     
         $decks = $decks->map(function($deck) {
             return [
@@ -41,6 +41,7 @@ class DeckController extends Controller
                 'cards' => $deck->cards,
                 'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
                 'category' => $deck->category ? ['id' => $deck->category->id, 'name' => $deck->category->name] : null,
+                'completions_count' => $deck->completions_count
             ];
         });
     
@@ -50,7 +51,7 @@ class DeckController extends Controller
 
     public function show($id) {
 
-        $deck = Deck::with(['cards', 'creator', 'highscores.user',])->findOrFail($id);
+        $deck = Deck::with(['cards', 'creator', 'highscores.user'])->withCount('completions')->findOrFail($id);
 
         return response()->json([
             'id' => $deck->id,
@@ -71,6 +72,7 @@ class DeckController extends Controller
                 'name' => optional($deck->category)->name,
                 'emoji' => optional($deck->category)->emoji,
             ],
+            'completions_count' => $deck->completions_count
         ]);
     }
 
@@ -146,7 +148,7 @@ class DeckController extends Controller
     
         try {
             // Find the deck to update
-            $deck = Deck::findOrFail($deckId);
+            $deck = Deck::with(['cards', 'creator', 'highscores.user'])->withCount('completions')->findOrFail($deckId);
     
             // Ensure that only the creator can update the deck
             if ($deck->creator_user_id != auth()->id()) {
@@ -195,6 +197,7 @@ class DeckController extends Controller
                     'name' => optional($deck->category)->name,
                     'emoji' => optional($deck->category)->emoji,
                 ],
+                'completions_count' => $deck->completions_count
             ], 200);
     
         } catch (\Exception $e) {
@@ -266,7 +269,9 @@ class DeckController extends Controller
 
             if (count($result) == 5) break;
 
-            $decks = Deck::with(['cards', 'creator', 'highscores.user',])->where('category_id', $category->id)
+            $decks = Deck::with(['cards', 'creator', 'highscores.user',])
+                    ->withCount('completions')
+                    ->where('category_id', $category->id)
                     ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
                     ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes
                     ->with('category') // Eager load the category relationship
@@ -292,6 +297,7 @@ class DeckController extends Controller
                         'cards' => $deck->cards,
                         'highscores' => $deck->highscores->sortBy('time')->take(3)->values(),
                         'category' => ['id' => $category->id, 'name' => $category->name, 'emoji' => $category->emoji],
+                        'completions_count' => $deck->completions_count
                     ];
                 });
         
@@ -307,6 +313,7 @@ class DeckController extends Controller
     public function getDecksByCategory($id, Request $request)
     {
         $decks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->withCount('completions')
             ->where('category_id', $id)
             ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id')
             ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count'))
@@ -363,6 +370,7 @@ class DeckController extends Controller
                     'name' => $deck->category->name,
                     'emoji' => $deck->category->emoji
                 ],
+                'completions_count' => $deck->completions_count
             ];
         });
 
@@ -384,6 +392,7 @@ class DeckController extends Controller
 
         // Fetch the decks liked by the user
         $likedDecks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->withCount('completions')
             ->join('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table
             ->where('likes.user_id', $user->id) // Filter for the authenticated user's likes
             ->select('decks.*', 'likes.created_at as liked_at', DB::raw('COUNT(likes.id) as likes_count')) // Include the liked timestamp
@@ -412,6 +421,7 @@ class DeckController extends Controller
                     'name' => optional($deck->category)->name,
                     'emoji' => optional($deck->category)->emoji,
                 ],
+                'completions_count' => $deck->completions_count
             ];
         });
 
@@ -434,6 +444,7 @@ class DeckController extends Controller
 
         // Fetch the decks created by the user
         $createdDecks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->withCount('completions')
             ->where('creator_user_id', $user->id) // Filter decks created by the user
             ->select('decks.*', DB::raw('COUNT(likes.id) as likes_count')) // Count the likes for each deck
             ->leftJoin('likes', 'decks.id', '=', 'likes.deck_id') // Join with the likes table to get like count
@@ -462,6 +473,7 @@ class DeckController extends Controller
                     'name' => optional($deck->category)->name,
                     'emoji' => optional($deck->category)->emoji,
                 ],
+                'completions_count' => $deck->completions_count
             ];
         });
 
@@ -520,6 +532,7 @@ class DeckController extends Controller
 
         // Perform a search on the decks table based on the search query
         $decks = Deck::with(['cards', 'creator', 'highscores.user', 'likedUsers'])
+            ->withCount('completions')
             ->where('name', 'LIKE', "%{$searchQuery}%")  // Search by deck name
             ->orWhere('description', 'LIKE', "%{$searchQuery}%")  // Optionally search by description
             ->orderBy('created_at', 'desc')
@@ -546,6 +559,7 @@ class DeckController extends Controller
                     'name' => optional($deck->category)->name,
                     'emoji' => optional($deck->category)->emoji,
                 ],
+                'completions_count' => $deck->completions_count
             ];
         });
 
